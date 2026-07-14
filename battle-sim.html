@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Симулятор боя — Отряд Кассандры</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141119;
+  --bg2:#1b1722;
+  --panel:#211c2b;
+  --panel2:#26202f;
+  --ink:#e9e1cd;
+  --muted:#a79bb0;
+  --muted2:#7d7189;
+  --blood:#b8453f;
+  --blood-dim:#7a3230;
+  --gold:#c49a4a;
+  --gold-dim:#8a7038;
+  --verdi:#5c9384;
+  --verdi-dim:#3c6156;
+  --violet:#8a6bb0;
+  --violet-dim:#5c4a75;
+  --line:#3a3346;
+  --shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(circle at 15% 0%, rgba(196,154,74,0.07), transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(92,147,132,0.06), transparent 45%),
+    var(--bg);
+  color:var(--ink);
+  font-family:'Spectral', serif;
+  line-height:1.55;
+  min-height:100vh;
+  padding-bottom:80px;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+header.hero{
+  padding:64px 24px 40px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  font-size:11px;
+  color:var(--gold);
+  margin-bottom:18px;
+}
+h1{
+  font-family:'Cinzel',serif;
+  font-weight:700;
+  font-size:clamp(28px,5vw,50px);
+  margin:0 0 14px;
+  color:var(--ink);
+  letter-spacing:.01em;
+}
+.hero p{
+  max-width:640px;
+  margin:0 auto;
+  color:var(--muted);
+  font-size:16px;
+}
+.rule{
+  width:120px;height:1px;margin:26px auto 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.reset-link{
+  position:absolute; top:20px; right:24px;
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.05em;
+  color:var(--muted2); background:transparent; border:1px solid var(--line);
+  padding:6px 12px; border-radius:4px; cursor:pointer; text-transform:uppercase;
+}
+.reset-link:hover{color:var(--blood); border-color:var(--blood-dim);}
+.save-note{
+  position:absolute; bottom:14px; right:24px; left:24px; text-align:center;
+  font-size:11px; color:var(--muted2); font-style:italic; opacity:0; transition:opacity .4s;
+}
+.save-note.show{opacity:1;}
+
+section{padding:56px 0;}
+.section-head{
+  display:flex;align-items:baseline;gap:14px;margin-bottom:26px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:14px;
+  flex-wrap:wrap;
+}
+.section-head.sub{margin-top:40px;margin-bottom:20px;padding-bottom:10px;}
+.section-head.sub h2{font-size:18px;}
+.section-num{
+  font-family:'JetBrains Mono',monospace;
+  color:var(--gold-dim);
+  font-size:13px;
+}
+.section-head h2{
+  font-family:'Cinzel',serif;
+  font-weight:600;
+  font-size:22px;
+  margin:0;
+  color:var(--ink);
+}
+.section-sub{
+  color:var(--muted2);font-size:14px;margin-left:auto;font-style:italic;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:16px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:18px;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:"";
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--tint,var(--gold));
+}
+.card.party::before{--tint:var(--verdi);}
+.card.pet::before{--tint:var(--gold-dim);}
+.card h3{
+  font-family:'Cinzel',serif;
+  font-size:16px;margin:2px 0 2px;color:var(--ink);
+}
+.card .role{
+  font-size:12px;color:var(--muted2);font-style:italic;margin-bottom:12px;
+}
+.field-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px;}
+.field-row label{font-size:12.5px;color:var(--muted);white-space:nowrap;}
+.field-row input{
+  width:82px;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  color:var(--ink);
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;
+  padding:5px 7px;
+  border-radius:4px;
+  text-align:right;
+}
+.field-row input:focus{outline:1px solid var(--gold);border-color:var(--gold);}
+.card .toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+.card .toggle-row label{font-size:12px;color:var(--muted);}
+.card .toggle-row.included-row{border-top:none;margin-top:0;padding-top:0;margin-bottom:12px;}
+
+.feature-block{
+  margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+}
+.feature-title{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;
+}
+.feature-title .fname{font-size:12.5px;color:var(--violet);font-family:'Cinzel',serif;letter-spacing:.02em;}
+.feature-sub{font-size:11px;color:var(--muted2);font-style:italic;margin:-4px 0 8px;}
+
+/* switch is a <label> wrapping the checkbox so any click (incl. the visual slider) toggles it */
+.switch{position:relative;width:36px;height:20px;flex:none;display:inline-block;cursor:pointer;}
+.switch input{opacity:0;width:100%;height:100%;position:absolute;top:0;left:0;margin:0;cursor:pointer;}
+.slider{position:absolute;inset:0;background:var(--bg2);border:1px solid var(--line);border-radius:20px;transition:.15s;pointer-events:none;}
+.slider::before{content:"";position:absolute;width:14px;height:14px;left:2px;top:2px;background:var(--muted2);border-radius:50%;transition:.15s;}
+.switch input:checked + .slider{background:var(--verdi-dim);border-color:var(--verdi);}
+.switch input:checked + .slider::before{transform:translateX(16px);background:var(--verdi);}
+.switch.violet input:checked + .slider{background:var(--violet-dim);border-color:var(--violet);}
+.switch.violet input:checked + .slider::before{background:var(--violet);}
+
+/* ---------- Companion cards: editable name + remove button ---------- */
+.card .c-name{
+  font-family:'Cinzel',serif;font-size:16px;background:transparent;border:none;border-bottom:1px dashed var(--line);
+  color:var(--ink);padding:2px 26px 5px 0;width:100%;margin-top:2px;
+}
+.card .c-name:focus{outline:none;border-color:var(--gold);}
+.card .c-role{
+  font-size:12px;color:var(--muted2);font-style:italic;background:transparent;border:none;
+  width:100%;margin:6px 0 12px;padding:2px 0;border-bottom:1px dashed transparent;
+}
+.card .c-role:focus{outline:none;border-bottom:1px dashed var(--line);}
+.remove-card-btn{
+  position:absolute;top:14px;right:14px;
+  background:transparent;border:1px solid var(--line);color:var(--muted2);
+  width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:11px;line-height:1;
+  display:flex;align-items:center;justify-content:center;padding:0;
+}
+.remove-card-btn:hover{border-color:var(--blood);color:var(--blood);}
+
+.add-companion-btn{
+  align-self:flex-start;
+  font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;
+  background:transparent;border:1px dashed var(--gold-dim);color:var(--gold);
+  padding:10px 18px;border-radius:5px;cursor:pointer;text-transform:uppercase;
+  margin-top:16px;
+}
+.add-companion-btn:hover{background:rgba(196,154,74,.08);}
+
+/* ---------- Enemy groups ---------- */
+.enemy-groups{display:flex;flex-direction:column;gap:16px;}
+.enemy-panel{
+  background:var(--panel);
+  border:1px solid var(--blood-dim);
+  border-radius:6px;
+  padding:22px 24px;
+  position:relative;
+}
+.enemy-panel::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--blood);
+}
+.enemy-panel-head{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+}
+.enemy-panel-head input.group-label{
+  font-family:'Cinzel',serif;font-size:15px;background:transparent;border:none;border-bottom:1px dashed var(--line);
+  color:var(--ink);padding:2px 2px 4px;width:180px;
+}
+.enemy-panel-head input.group-label:focus{outline:none;border-color:var(--blood);}
+.remove-group-btn{
+  margin-left:auto;
+  background:transparent;border:1px solid var(--blood-dim);color:var(--blood);
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 10px;border-radius:4px;cursor:pointer;
+}
+.remove-group-btn:hover{background:rgba(184,69,63,.1);}
+.enemy-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;
+}
+.enemy-field label{
+  display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;
+}
+.enemy-field input{
+  width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--ink);
+  font-family:'JetBrains Mono',monospace;font-size:16px;padding:9px 10px;border-radius:4px;
+}
+.enemy-field input:focus{outline:1px solid var(--blood);border-color:var(--blood);}
+.enemy-field .hint{font-size:11px;color:var(--muted2);margin-top:5px;font-style:italic;}
+
+.aoe-row{
+  display:flex;align-items:center;gap:10px;margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);
+  font-size:13px;color:var(--muted);flex-wrap:wrap;
+}
+.aoe-row input[type=number]{
+  width:64px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);
+  font-family:'JetBrains Mono',monospace;font-size:13px;padding:5px 7px;border-radius:4px;text-align:right;
+}
+
+.alt-attacks-container{display:flex;flex-direction:column;gap:14px;}
+.alt-attack-block{
+  background:var(--panel2);border:1px solid var(--violet-dim);border-radius:5px;padding:16px;margin-top:14px;position:relative;
+}
+.alt-attack-block .a-label{
+  font-family:'Cinzel',serif;font-size:13px;background:transparent;border:none;border-bottom:1px dashed var(--line);
+  color:var(--violet);padding:2px 2px 4px;width:200px;
+}
+.alt-attack-block .a-label:focus{outline:none;border-color:var(--violet);}
+.alt-attack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:10px;}
+.alt-attack-grid .mini-field label{display:block;font-size:11px;color:var(--muted2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.alt-attack-grid .mini-field input{
+  width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--ink);
+  font-family:'JetBrains Mono',monospace;font-size:13px;padding:6px 8px;border-radius:4px;
+}
+.remove-alt-btn{
+  background:transparent;border:1px solid var(--blood-dim);color:var(--blood);
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:5px 10px;border-radius:4px;cursor:pointer;
+  margin-top:12px;
+}
+.remove-alt-btn:hover{background:rgba(184,69,63,.1);}
+
+.add-alt-attack-btn{
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.04em;
+  background:transparent;border:1px dashed var(--violet-dim);color:var(--violet);
+  padding:8px 14px;border-radius:5px;cursor:pointer;text-transform:uppercase;
+  margin-top:14px;
+}
+.add-alt-attack-btn:hover{background:rgba(138,107,176,.08);}
+
+.add-group-btn{
+  align-self:flex-start;
+  font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;
+  background:transparent;border:1px dashed var(--blood-dim);color:var(--blood);
+  padding:10px 18px;border-radius:5px;cursor:pointer;text-transform:uppercase;
+}
+.add-group-btn:hover{background:rgba(184,69,63,.08);}
+
+.run-row{
+  display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  margin-top:28px;padding-top:22px;border-top:1px solid var(--line);
+}
+.run-row .enemy-field{max-width:150px;}
+.run-btn{
+  font-family:'Cinzel',serif;
+  font-weight:600;
+  letter-spacing:.04em;
+  background:linear-gradient(180deg,var(--gold),var(--gold-dim));
+  color:#1a1512;
+  border:none;
+  padding:13px 30px;
+  border-radius:5px;
+  cursor:pointer;
+  font-size:15px;
+  box-shadow:var(--shadow);
+  transition:transform .1s ease;
+}
+.run-btn:hover{transform:translateY(-1px);}
+.run-btn:active{transform:translateY(0);}
+.run-btn:disabled{opacity:.5;cursor:default;}
+
+.results{display:none;}
+.results.show{display:block;}
+.stat-strip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:30px;
+}
+.stat{
+  background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:18px 18px 16px;
+}
+.stat .num{font-family:'JetBrains Mono',monospace;font-size:30px;color:var(--gold);font-weight:600;}
+.stat .num.blood{color:var(--blood);}
+.stat .num.verdi{color:var(--verdi);}
+.stat .lbl{font-size:12.5px;color:var(--muted);margin-top:4px;}
+
+.chart-block{
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:24px;margin-bottom:26px;
+}
+.chart-block h4{font-family:'Cinzel',serif;font-size:15px;margin:0 0 4px;color:var(--ink);}
+.chart-sub{font-size:12.5px;color:var(--muted2);margin-bottom:18px;font-style:italic;}
+canvas{width:100%;display:block;}
+
+.ledger{
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0;overflow:hidden;
+}
+.ledger-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 22px;border-bottom:1px solid var(--line);background:var(--panel2);
+}
+.ledger-head h4{font-family:'Cinzel',serif;font-size:15px;margin:0;}
+.reroll-btn{
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.05em;
+  background:transparent;border:1px solid var(--gold-dim);color:var(--gold);
+  padding:7px 12px;border-radius:4px;cursor:pointer;text-transform:uppercase;
+}
+.reroll-btn:hover{background:rgba(196,154,74,.08);}
+.ledger-body{max-height:420px;overflow-y:auto;padding:6px 0;}
+.round-block{padding:14px 22px;border-bottom:1px dashed var(--line);}
+.round-block:last-child{border-bottom:none;}
+.round-num{
+  font-family:'Cinzel',serif;color:var(--gold);font-size:13px;letter-spacing:.06em;margin-bottom:8px;
+  display:flex;align-items:center;gap:10px;
+}
+.round-num::after{content:"";flex:1;height:1px;background:var(--line);}
+.log-line{font-size:13px;color:var(--muted);margin:3px 0;font-family:'JetBrains Mono',monospace;}
+.log-line .hit{color:var(--blood);}
+.log-line .heal{color:var(--verdi);}
+.log-line .miss{color:var(--muted2);}
+.log-line .down{color:var(--blood);font-weight:600;}
+.log-line .feat{color:var(--violet);}
+
+footer{
+  text-align:center;padding:40px 24px 10px;color:var(--muted2);font-size:12px;
+}
+
+@media (max-width:640px){
+  header.hero{padding:44px 18px 30px;}
+  section{padding:36px 0;}
+  .reset-link{position:static;display:block;margin:14px auto 0;width:fit-content;}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <button class="reset-link" id="resetBtn">⟲ Сбросить всё</button>
+  <div class="eyebrow">D&D 2024 · Симулятор Столкновений</div>
+  <h1>Сколько раундов выдержит отряд?</h1>
+  <p>Отряд выходит на арену. Задайте параметры противников — симулятор прогонит сотни боёв и покажет, сколько раундов в среднем продержится каждая сторона. Все изменения сохраняются автоматически в этом браузере.</p>
+  <div class="rule"></div>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= PARTY ================= -->
+  <section id="party-section">
+    <div class="section-head">
+      <span class="section-num">I</span>
+      <h2>Отряд</h2>
+      <span class="section-sub">значения, способности и участие в бою — редактируемые</span>
+    </div>
+    <div class="cards" id="partyCards"></div>
+
+    <div class="section-head sub">
+      <span class="section-num">I·б</span>
+      <h2>Приспешники</h2>
+      <span class="section-sub">призванные/управляемые существа — можно добавлять и убирать</span>
+    </div>
+    <div class="cards" id="companionCards"></div>
+    <button class="add-companion-btn" id="addCompanionBtn">+ Добавить приспешника</button>
+  </section>
+
+  <!-- ================= ENEMY ================= -->
+  <section id="enemy-section">
+    <div class="section-head">
+      <span class="section-num">II</span>
+      <h2>Противники</h2>
+      <span class="section-sub">несколько типов врагов, доп. атаки с зарядами, площадные удары</span>
+    </div>
+    <div class="enemy-groups" id="enemyGroups"></div>
+    <button class="add-group-btn" id="addGroupBtn" style="margin-top:16px;">+ Добавить тип противника</button>
+
+    <div class="run-row">
+      <div class="enemy-field">
+        <label for="numTrials">Симуляций</label>
+        <input type="number" id="numTrials" value="800" min="10" max="5000">
+      </div>
+      <div class="enemy-field">
+        <label for="roundCap">Предел раундов</label>
+        <input type="number" id="roundCap" value="25" min="5" max="100">
+      </div>
+      <button class="run-btn" id="runBtn">⚔ Запустить симуляцию</button>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="results-section" class="results">
+    <div class="section-head">
+      <span class="section-num">III</span>
+      <h2>Итоги</h2>
+      <span class="section-sub" id="trialsRanLabel"></span>
+    </div>
+
+    <div class="stat-strip" id="statStrip"></div>
+
+    <div class="chart-block">
+      <h4>Распределение исходов по раундам</h4>
+      <div class="chart-sub">Зелёное — победа отряда на этом раунде, красное — поражение отряда. Высота столбца = доля симуляций.</div>
+      <canvas id="histCanvas" height="220"></canvas>
+    </div>
+
+    <div class="chart-block">
+      <h4>Средний остаток HP отряда по раундам</h4>
+      <div class="chart-sub">Медианный суммарный запас HP живых персонажей, раунд за раундом (по всем симуляциям).</div>
+      <canvas id="hpCanvas" height="200"></canvas>
+    </div>
+
+    <div class="ledger">
+      <div class="ledger-head">
+        <h4>Пример боя (полная хроника)</h4>
+        <button class="reroll-btn" id="rerollBtn">⟳ Другой пример</button>
+      </div>
+      <div class="ledger-body" id="ledgerBody"></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>Симулятор использует приближённые правила D&D 2024: d20 + бонус атаки против AC, крит на 20 удваивает кости урона, промах на 1. Особые умения, площадные атаки и лечение упрощены — см. подсказки в карточках.</footer>
+
+<script>
+/* =========================================================
+   PARTY DATA — derived from the uploaded Roll20 sheets
+   (fixed party members; companions are fully dynamic, see below)
+   ========================================================= */
+const PARTY_DEFAULT = [
+  {
+    id:'cassandra', name:'Кассандра', role:'Следопыт 5 / Монах 2 (7 ур.)',
+    ac:16, hp:58, atkBonus:8, numAtk:3, dmgDice:'1d6+5',
+    healer:false,
+    huntersMark:{enabled:true, die:'1d6'},
+    colossusSlayer:{enabled:true, die:'1d8'}
+  },
+  {
+    id:'elion', name:'Элион', role:'Паладин Мести 7 ур. (танк)',
+    ac:20, hp:60, atkBonus:7, numAtk:2, dmgDice:'1d10+4',
+    healer:false,
+    divineSmite:{enabled:true, die:'2d8', charges:4}
+  },
+  {
+    id:'eanasir', name:'Эа-насир', role:'Клирик Обмана 7 ур. (хилер)',
+    ac:16, hp:45, atkBonus:6, numAtk:2, dmgDice:'1d8+3',
+    healer:true, healDice:'2d8+3', healThreshold:0.5
+  },
+  {
+    id:'vrakir', name:'Вракир Безмолвный', role:'Некромант 7 ур. (заклинатель)',
+    ac:12, hp:51, atkBonus:6, numAtk:1, dmgDice:'3d6',
+    healer:false,
+    altAttack:{enabled:true, label:'Dead Mist Lash (3 круг)', atkBonus:6, dmgDice:'3d8', charges:2}
+  },
+  {
+    id:'aris', name:'Арис', role:'Друид Круга Жертвоприношений 7 ур. (хилер/урон)',
+    ac:14, hp:52, atkBonus:7, numAtk:1, dmgDice:'2d8+4',
+    healer:true, healDice:'2d8+4', healThreshold:0.5
+  },
+  {
+    id:'maximilian', name:'Максимилиан', role:'Пси-Воин 7 ур. (танк/урон)',
+    ac:18, hp:60, atkBonus:7, numAtk:2, dmgDice:'1d10+4',
+    healer:false
+  }
+];
+
+const COMPANION_DEFAULT_STATS = {ac:16, hp:45, atkBonus:7, numAtk:2, dmgDice:'1d10+4'};
+const STORAGE_KEY = 'dndBattleSimState_v2';
+
+/* =========================================================
+   DICE HELPERS
+   ========================================================= */
+function rollDie(sides){ return 1 + Math.floor(Math.random()*sides); }
+
+function parseDice(str){
+  str = String(str).trim().toLowerCase().replace(/\s+/g,'');
+  let m = str.match(/^(\d+)d(\d+)([+-]\d+)?$/);
+  if(m){
+    return {count:parseInt(m[1]), sides:parseInt(m[2]), bonus: m[3]?parseInt(m[3]):0};
+  }
+  let n = parseFloat(str);
+  if(!isNaN(n)) return {count:0, sides:0, bonus:n};
+  return {count:1, sides:6, bonus:0};
+}
+
+function rollDiceRaw(diceStr, crit){
+  const {count, sides, bonus} = parseDice(diceStr);
+  let mult = crit ? 2 : 1;
+  let total = bonus;
+  for(let i=0;i<count*mult;i++) total += rollDie(sides);
+  return Math.max(0, Math.round(total));
+}
+
+/* =========================================================
+   PERSISTENCE (localStorage) — this is a standalone file the
+   user opens directly in their browser, so plain localStorage
+   is used to remember every number/toggle between visits.
+   ========================================================= */
+function loadSavedState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+function val(v, fallback){ return (v!==undefined && v!==null && v!=='') ? v : fallback; }
+
+function collectPartyState(){
+  return [...partyCardsEl.querySelectorAll('.card')].map(card=>{
+    const g = sel => card.querySelector(sel);
+    const s = {
+      id: card.dataset.id,
+      ac:g('.f-ac').value, hp:g('.f-hp').value, atkBonus:g('.f-atkbonus').value,
+      numAtk:g('.f-numatk').value, dmgDice:g('.f-dmg').value,
+      included: g('.f-included') ? g('.f-included').checked : true
+    };
+    if(g('.f-healdice')){ s.healDice=g('.f-healdice').value; s.healUses=g('.f-healuses').value; }
+    if(g('.f-hm-on')){ s.hmOn=g('.f-hm-on').checked; s.hmDie=g('.f-hm-die').value; }
+    if(g('.f-cs-on')){ s.csOn=g('.f-cs-on').checked; s.csDie=g('.f-cs-die').value; }
+    if(g('.f-ds-on')){ s.dsOn=g('.f-ds-on').checked; s.dsDie=g('.f-ds-die').value; s.dsCharges=g('.f-ds-charges').value; }
+    if(g('.f-alt-on')){ s.altOn=g('.f-alt-on').checked; s.altBonus=g('.f-alt-bonus').value; s.altDmg=g('.f-alt-dmg').value; s.altCharges=g('.f-alt-charges').value; }
+    return s;
+  });
+}
+function collectCompanionsState(){
+  return [...companionsEl.querySelectorAll('.card')].map(card=>({
+    name:card.querySelector('.c-name').value, role:card.querySelector('.c-role').value,
+    ac:card.querySelector('.f-ac').value, hp:card.querySelector('.f-hp').value,
+    atkBonus:card.querySelector('.f-atkbonus').value, numAtk:card.querySelector('.f-numatk').value,
+    dmgDice:card.querySelector('.f-dmg').value, included:card.querySelector('.f-included').checked
+  }));
+}
+function collectEnemyGroupsState(){
+  return [...enemyGroupsEl.children].map(g=>({
+    label:g.querySelector('.group-label').value,
+    ac:g.querySelector('.g-ac').value, hp:g.querySelector('.g-hp').value,
+    atkBonus:g.querySelector('.g-atkbonus').value, numAtk:g.querySelector('.g-numatk').value,
+    dmg:g.querySelector('.g-dmg').value, count:g.querySelector('.g-count').value,
+    aoeOn:g.querySelector('.g-aoe-on').checked, aoeTargets:g.querySelector('.g-aoe-targets').value,
+    altAttacks:[...g.querySelectorAll('.alt-attack-block')].map(a=>({
+      label:a.querySelector('.a-label').value, enabled:a.querySelector('.a-on').checked,
+      atkBonus:a.querySelector('.a-bonus').value, dmgDice:a.querySelector('.a-dmg').value,
+      numAtk:a.querySelector('.a-numatk').value, charges:a.querySelector('.a-charges').value,
+      aoeOn:a.querySelector('.a-aoe-on').checked, aoeTargets:a.querySelector('.a-aoe-targets').value
+    }))
+  }));
+}
+let saveTimer=null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    try{
+      const state = {
+        party: collectPartyState(),
+        companions: collectCompanionsState(),
+        enemyGroups: collectEnemyGroupsState(),
+        numTrials: document.getElementById('numTrials').value,
+        roundCap: document.getElementById('roundCap').value
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      flashSaveNote();
+    }catch(e){ /* storage unavailable — fail silently */ }
+  }, 300);
+}
+let saveNoteTimer=null;
+function flashSaveNote(){
+  let note = document.getElementById('saveNote');
+  if(!note){
+    note = document.createElement('div');
+    note.id='saveNote'; note.className='save-note';
+    note.textContent='Изменения сохранены в этом браузере';
+    document.querySelector('header.hero').appendChild(note);
+  }
+  note.classList.add('show');
+  clearTimeout(saveNoteTimer);
+  saveNoteTimer = setTimeout(()=> note.classList.remove('show'), 1400);
+}
+
+/* =========================================================
+   UI: build fixed party cards
+   ========================================================= */
+const partyCardsEl = document.getElementById('partyCards');
+
+function mergeDef(def, override){
+  override = override || {};
+  const m = {...def};
+  m.ac = val(override.ac, def.ac);
+  m.hp = val(override.hp, def.hp);
+  m.atkBonus = val(override.atkBonus, def.atkBonus);
+  m.numAtk = val(override.numAtk, def.numAtk);
+  m.dmgDice = val(override.dmgDice, def.dmgDice);
+  m.included = override.included !== undefined ? override.included : true;
+  if(def.healer){
+    m.healDice = val(override.healDice, def.healDice);
+    m.healUses = val(override.healUses, 4);
+  }
+  if(def.huntersMark){
+    m.huntersMark = {
+      enabled: override.hmOn !== undefined ? override.hmOn : def.huntersMark.enabled,
+      die: val(override.hmDie, def.huntersMark.die)
+    };
+  }
+  if(def.colossusSlayer){
+    m.colossusSlayer = {
+      enabled: override.csOn !== undefined ? override.csOn : def.colossusSlayer.enabled,
+      die: val(override.csDie, def.colossusSlayer.die)
+    };
+  }
+  if(def.divineSmite){
+    m.divineSmite = {
+      enabled: override.dsOn !== undefined ? override.dsOn : def.divineSmite.enabled,
+      die: val(override.dsDie, def.divineSmite.die),
+      charges: val(override.dsCharges, def.divineSmite.charges)
+    };
+  }
+  if(def.altAttack){
+    m.altAttack = {
+      label: def.altAttack.label,
+      enabled: override.altOn !== undefined ? override.altOn : def.altAttack.enabled,
+      atkBonus: val(override.altBonus, def.altAttack.atkBonus),
+      dmgDice: val(override.altDmg, def.altAttack.dmgDice),
+      charges: val(override.altCharges, def.altAttack.charges)
+    };
+  }
+  return m;
+}
+
+function featureHTML(m){
+  let html = '';
+  if(m.huntersMark){
+    html += `
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="fname">Метка охотника</span>
+        <label class="switch violet"><input type="checkbox" class="f-hm-on" ${m.huntersMark.enabled?'checked':''}><span class="slider"></span></label>
+      </div>
+      <div class="feature-sub">+урон по цели, на которую наведена метка (авто-поддерживается на фокус-цели)</div>
+      <div class="field-row"><label>Кость метки</label><input type="text" class="f-hm-die" value="${m.huntersMark.die}" style="width:70px;"></div>
+    </div>`;
+  }
+  if(m.colossusSlayer){
+    html += `
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="fname">Убийца Колоссов</span>
+        <label class="switch violet"><input type="checkbox" class="f-cs-on" ${m.colossusSlayer.enabled?'checked':''}><span class="slider"></span></label>
+      </div>
+      <div class="feature-sub">раз за ход +урон, если цель уже не на полном HP</div>
+      <div class="field-row"><label>Кость Колоссов</label><input type="text" class="f-cs-die" value="${m.colossusSlayer.die}" style="width:70px;"></div>
+    </div>`;
+  }
+  if(m.divineSmite){
+    html += `
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="fname">Божественная Кара</span>
+        <label class="switch violet"><input type="checkbox" class="f-ds-on" ${m.divineSmite.enabled?'checked':''}><span class="slider"></span></label>
+      </div>
+      <div class="feature-sub">тратит ячейку при попадании ради доп. радиантного урона</div>
+      <div class="field-row"><label>Кость Кары</label><input type="text" class="f-ds-die" value="${m.divineSmite.die}" style="width:70px;"></div>
+      <div class="field-row"><label>Заряды за бой</label><input type="number" class="f-ds-charges" value="${m.divineSmite.charges}" style="width:70px;"></div>
+    </div>`;
+  }
+  if(m.altAttack){
+    html += `
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="fname">${m.altAttack.label}</span>
+        <label class="switch violet"><input type="checkbox" class="f-alt-on" ${m.altAttack.enabled?'checked':''}><span class="slider"></span></label>
+      </div>
+      <div class="feature-sub">пока есть заряды — используется вместо обычной атаки</div>
+      <div class="field-row"><label>Бонус атаки</label><input type="number" class="f-alt-bonus" value="${m.altAttack.atkBonus}" style="width:70px;"></div>
+      <div class="field-row"><label>Урон</label><input type="text" class="f-alt-dmg" value="${m.altAttack.dmgDice}" style="width:70px;"></div>
+      <div class="field-row"><label>Заряды за бой</label><input type="number" class="f-alt-charges" value="${m.altAttack.charges}" style="width:70px;"></div>
+    </div>`;
+  }
+  return html;
+}
+
+function buildCard(def, override){
+  const m = mergeDef(def, override);
+  const div = document.createElement('div');
+  div.className = 'card party';
+  div.dataset.id = def.id;
+
+  div.innerHTML = `
+    <h3>${m.name}</h3>
+    <div class="role">${m.role}</div>
+    <div class="toggle-row included-row">
+      <label>Участвует в бою</label>
+      <label class="switch"><input type="checkbox" class="f-included" ${m.included?'checked':''}><span class="slider"></span></label>
+    </div>
+    <div class="field-row"><label>Armor Class</label><input type="number" class="f-ac" value="${m.ac}"></div>
+    <div class="field-row"><label>Hit Points (макс.)</label><input type="number" class="f-hp" value="${m.hp}"></div>
+    <div class="field-row"><label>Бонус атаки</label><input type="number" class="f-atkbonus" value="${m.atkBonus}"></div>
+    <div class="field-row"><label>Атак за раунд</label><input type="number" class="f-numatk" value="${m.numAtk}"></div>
+    <div class="field-row"><label>Урон за атаку</label><input type="text" class="f-dmg" value="${m.dmgDice}"></div>
+    ${def.healer ? `
+    <div class="toggle-row" style="border-top:1px dashed var(--line);flex-direction:column;align-items:stretch;gap:6px;">
+      <div class="field-row"><label>Лечение (кубик)</label><input type="text" class="f-healdice" value="${m.healDice}" style="width:82px;"></div>
+      <div class="field-row"><label>Заряды лечения</label><input type="number" class="f-healuses" value="${m.healUses}" style="width:82px;"></div>
+    </div>` : ''}
+    ${featureHTML(m)}
+  `;
+  return div;
+}
+
+/* =========================================================
+   UI: companion cards (dynamic add/remove)
+   ========================================================= */
+const companionsEl = document.getElementById('companionCards');
+
+function buildCompanionCard(def){
+  const id = 'companion_'+Math.random().toString(36).slice(2,9);
+  const div = document.createElement('div');
+  div.className = 'card pet';
+  div.dataset.id = id;
+  const included = def.included !== undefined ? def.included : true;
+  div.innerHTML = `
+    <button class="remove-card-btn" title="Убрать приспешника">✕</button>
+    <input type="text" class="c-name" value="${def.name||'Новый приспешник'}">
+    <input type="text" class="c-role" value="${def.role||''}" placeholder="роль / описание">
+    <div class="toggle-row included-row">
+      <label>Участвует в бою</label>
+      <label class="switch"><input type="checkbox" class="f-included" ${included?'checked':''}><span class="slider"></span></label>
+    </div>
+    <div class="field-row"><label>Armor Class</label><input type="number" class="f-ac" value="${def.ac}"></div>
+    <div class="field-row"><label>Hit Points (макс.)</label><input type="number" class="f-hp" value="${def.hp}"></div>
+    <div class="field-row"><label>Бонус атаки</label><input type="number" class="f-atkbonus" value="${def.atkBonus}"></div>
+    <div class="field-row"><label>Атак за раунд</label><input type="number" class="f-numatk" value="${def.numAtk}"></div>
+    <div class="field-row"><label>Урон за атаку</label><input type="text" class="f-dmg" value="${def.dmgDice}"></div>
+  `;
+  div.querySelector('.remove-card-btn').addEventListener('click', ()=>{ div.remove(); scheduleSave(); });
+  companionsEl.appendChild(div);
+  return div;
+}
+
+function readPartyFromUI(){
+  const list = [];
+
+  [...partyCardsEl.querySelectorAll('.card')].forEach(card=>{
+    const includedEl = card.querySelector('.f-included');
+    if(includedEl && !includedEl.checked) return;
+
+    const id = card.dataset.id;
+    const def = PARTY_DEFAULT.find(d=>d.id===id);
+    const ac = parseInt(card.querySelector('.f-ac').value)||10;
+    const hp = parseInt(card.querySelector('.f-hp').value)||1;
+    const atkBonus = parseInt(card.querySelector('.f-atkbonus').value)||0;
+    const numAtk = parseInt(card.querySelector('.f-numatk').value)||1;
+    const dmgDice = card.querySelector('.f-dmg').value || '1d6';
+
+    const entry = {id, name:def.name, role:def.role, ac, hp, atkBonus, numAtk, dmgDice,
+      healer:false, healDice:'', healThreshold:0, healUsesOverride:0,
+      huntersMark:null, colossusSlayer:null, divineSmite:null, altAttack:null};
+
+    const healDiceEl = card.querySelector('.f-healdice');
+    if(healDiceEl){
+      entry.healer = true;
+      entry.healDice = healDiceEl.value || '2d8';
+      entry.healThreshold = def.healThreshold || 0.5;
+      entry.healUsesOverride = parseInt(card.querySelector('.f-healuses').value)||4;
+    }
+    const hmOn = card.querySelector('.f-hm-on');
+    if(hmOn) entry.huntersMark = { enabled: hmOn.checked, die: card.querySelector('.f-hm-die').value || '1d6' };
+    const csOn = card.querySelector('.f-cs-on');
+    if(csOn) entry.colossusSlayer = { enabled: csOn.checked, die: card.querySelector('.f-cs-die').value || '1d8' };
+    const dsOn = card.querySelector('.f-ds-on');
+    if(dsOn){
+      entry.divineSmite = { enabled: dsOn.checked, die: card.querySelector('.f-ds-die').value || '2d8',
+        charges: parseInt(card.querySelector('.f-ds-charges').value)||0 };
+    }
+    const altOn = card.querySelector('.f-alt-on');
+    if(altOn){
+      entry.altAttack = { enabled: altOn.checked, label: def.altAttack.label,
+        atkBonus: parseInt(card.querySelector('.f-alt-bonus').value)||0,
+        dmgDice: card.querySelector('.f-alt-dmg').value || '3d8',
+        charges: parseInt(card.querySelector('.f-alt-charges').value)||0 };
+    }
+    list.push(entry);
+  });
+
+  [...companionsEl.querySelectorAll('.card')].forEach(card=>{
+    const included = card.querySelector('.f-included').checked;
+    if(!included) return;
+    const name = card.querySelector('.c-name').value || 'Приспешник';
+    const ac = parseInt(card.querySelector('.f-ac').value)||10;
+    const hp = parseInt(card.querySelector('.f-hp').value)||1;
+    const atkBonus = parseInt(card.querySelector('.f-atkbonus').value)||0;
+    const numAtk = parseInt(card.querySelector('.f-numatk').value)||1;
+    const dmgDice = card.querySelector('.f-dmg').value || '1d6';
+    list.push({id:card.dataset.id, name, role:'', ac, hp, atkBonus, numAtk, dmgDice,
+      healer:false, healDice:'', healThreshold:0, healUsesOverride:0,
+      huntersMark:null, colossusSlayer:null, divineSmite:null, altAttack:null});
+  });
+
+  return list;
+}
+
+/* =========================================================
+   UI: enemy groups (multiple types + extra limited-use attacks + AoE)
+   ========================================================= */
+const enemyGroupsEl = document.getElementById('enemyGroups');
+let groupCounter = 0;
+
+function addAltAttackBlock(container, prefill){
+  const p = prefill || {label:'Особая атака', enabled:true, atkBonus:6, dmgDice:'2d6', numAtk:1, charges:2, aoeOn:false, aoeTargets:3};
+  const div = document.createElement('div');
+  div.className = 'alt-attack-block';
+  div.innerHTML = `
+    <div class="feature-title">
+      <input type="text" class="a-label" value="${p.label}">
+      <label class="switch violet"><input type="checkbox" class="a-on" ${p.enabled?'checked':''}><span class="slider"></span></label>
+    </div>
+    <div class="feature-sub">ограниченное число применений за бой; пока есть заряды — заменяет обычную атаку в раунде</div>
+    <div class="alt-attack-grid">
+      <div class="mini-field"><label>Бонус атаки</label><input type="number" class="a-bonus" value="${p.atkBonus}"></div>
+      <div class="mini-field"><label>Урон</label><input type="text" class="a-dmg" value="${p.dmgDice}"></div>
+      <div class="mini-field"><label>Атак/применение</label><input type="number" class="a-numatk" value="${p.numAtk}"></div>
+      <div class="mini-field"><label>Зарядов за бой</label><input type="number" class="a-charges" value="${p.charges}"></div>
+    </div>
+    <div class="aoe-row">
+      <label class="switch violet"><input type="checkbox" class="a-aoe-on" ${p.aoeOn?'checked':''}><span class="slider"></span></label>
+      <span>по площади —</span>
+      <input type="number" class="a-aoe-targets" value="${p.aoeTargets}"> целей за раз
+    </div>
+    <button class="remove-alt-btn">✕ убрать тип атаки</button>
+  `;
+  div.querySelector('.remove-alt-btn').addEventListener('click', ()=>{ div.remove(); scheduleSave(); });
+  container.appendChild(div);
+}
+
+function addEnemyGroup(prefill){
+  groupCounter++;
+  const idx = groupCounter;
+  const p = prefill || {label:'Тип '+String.fromCharCode(64+idx), ac:15, hp:30, atkBonus:6, numAtk:2, dmg:'1d8+3', count:4, aoeOn:false, aoeTargets:3, altAttacks:[]};
+  const div = document.createElement('div');
+  div.className = 'enemy-panel';
+  div.dataset.groupId = idx;
+  div.innerHTML = `
+    <div class="enemy-panel-head">
+      <input type="text" class="group-label" value="${p.label}">
+      <button class="remove-group-btn" style="display:${enemyGroupsEl.children.length===0?'none':'inline-block'};">✕ убрать</button>
+    </div>
+    <div class="enemy-grid">
+      <div class="enemy-field">
+        <label>Armor Class</label>
+        <input type="number" class="g-ac" value="${p.ac}" min="1" max="30">
+      </div>
+      <div class="enemy-field">
+        <label>Hit Points</label>
+        <input type="number" class="g-hp" value="${p.hp}" min="1" max="500">
+      </div>
+      <div class="enemy-field">
+        <label>Attack Bonus</label>
+        <input type="number" class="g-atkbonus" value="${p.atkBonus}" min="-5" max="20">
+      </div>
+      <div class="enemy-field">
+        <label>Number of Attacks</label>
+        <input type="number" class="g-numatk" value="${p.numAtk}" min="1" max="10">
+      </div>
+      <div class="enemy-field">
+        <label>Damage Per Attack</label>
+        <input type="text" class="g-dmg" value="${p.dmg}">
+        <div class="hint">формат: 2d6+4, или просто число</div>
+      </div>
+      <div class="enemy-field">
+        <label>Количество</label>
+        <input type="number" class="g-count" value="${p.count}" min="1" max="30">
+      </div>
+    </div>
+    <div class="aoe-row">
+      <label class="switch violet"><input type="checkbox" class="g-aoe-on" ${p.aoeOn?'checked':''}><span class="slider"></span></label>
+      <span>основная атака — по площади —</span>
+      <input type="number" class="g-aoe-targets" value="${p.aoeTargets||3}"> целей за раз
+    </div>
+    <div class="alt-attacks-container"></div>
+    <button class="add-alt-attack-btn">+ Добавить тип атаки</button>
+  `;
+  div.querySelector('.remove-group-btn').addEventListener('click', ()=>{
+    div.remove();
+    updateRemoveButtons();
+    scheduleSave();
+  });
+  div.querySelector('.add-alt-attack-btn').addEventListener('click', ()=>{
+    addAltAttackBlock(div.querySelector('.alt-attacks-container'));
+    scheduleSave();
+  });
+  enemyGroupsEl.appendChild(div);
+
+  const altContainer = div.querySelector('.alt-attacks-container');
+  (p.altAttacks||[]).forEach(a => addAltAttackBlock(altContainer, a));
+
+  updateRemoveButtons();
+}
+
+function updateRemoveButtons(){
+  const groups = [...enemyGroupsEl.children];
+  groups.forEach(g=>{
+    const btn = g.querySelector('.remove-group-btn');
+    btn.style.display = groups.length>1 ? 'inline-block' : 'none';
+  });
+}
+
+document.getElementById('addGroupBtn').addEventListener('click', ()=>{ addEnemyGroup(); scheduleSave(); });
+
+function readEnemyGroupsFromUI(){
+  return [...enemyGroupsEl.children].map(g=>({
+    label: g.querySelector('.group-label').value || 'Противник',
+    ac: parseInt(g.querySelector('.g-ac').value)||10,
+    hp: parseInt(g.querySelector('.g-hp').value)||1,
+    atkBonus: parseInt(g.querySelector('.g-atkbonus').value)||0,
+    numAtk: parseInt(g.querySelector('.g-numatk').value)||1,
+    dmg: g.querySelector('.g-dmg').value || '1d6',
+    count: parseInt(g.querySelector('.g-count').value)||1,
+    aoeOn: g.querySelector('.g-aoe-on').checked,
+    aoeTargets: parseInt(g.querySelector('.g-aoe-targets').value)||1,
+    altAttacks: [...g.querySelectorAll('.alt-attack-block')].map(a=>({
+      label: a.querySelector('.a-label').value || 'Особая атака',
+      enabled: a.querySelector('.a-on').checked,
+      atkBonus: parseInt(a.querySelector('.a-bonus').value)||0,
+      dmgDice: a.querySelector('.a-dmg').value || '2d6',
+      numAtk: parseInt(a.querySelector('.a-numatk').value)||1,
+      charges: parseInt(a.querySelector('.a-charges').value)||0,
+      aoeOn: a.querySelector('.a-aoe-on').checked,
+      aoeTargets: parseInt(a.querySelector('.a-aoe-targets').value)||1
+    }))
+  }));
+}
+
+/* =========================================================
+   INITIALISE UI (restore saved state if present)
+   ========================================================= */
+const SAVED = loadSavedState();
+
+PARTY_DEFAULT.forEach(def=>{
+  const override = SAVED && SAVED.party ? SAVED.party.find(p=>p.id===def.id) : null;
+  partyCardsEl.appendChild(buildCard(def, override));
+});
+
+if(SAVED && SAVED.companions && SAVED.companions.length){
+  SAVED.companions.forEach(c=> buildCompanionCard(c));
+} else {
+  buildCompanionCard({name:'Дэднот', role:'Приспешник Вракира (немертвый страж)', ...COMPANION_DEFAULT_STATS});
+}
+document.getElementById('addCompanionBtn').addEventListener('click', ()=>{
+  buildCompanionCard({name:'Новый приспешник', role:'', ...COMPANION_DEFAULT_STATS});
+  scheduleSave();
+});
+
+if(SAVED && SAVED.enemyGroups && SAVED.enemyGroups.length){
+  SAVED.enemyGroups.forEach(g=> addEnemyGroup(g));
+} else {
+  addEnemyGroup({label:'Тип A', ac:15, hp:30, atkBonus:6, numAtk:2, dmg:'1d8+3', count:4, aoeOn:false, aoeTargets:3, altAttacks:[]});
+}
+
+if(SAVED){
+  if(SAVED.numTrials) document.getElementById('numTrials').value = SAVED.numTrials;
+  if(SAVED.roundCap) document.getElementById('roundCap').value = SAVED.roundCap;
+}
+
+document.addEventListener('input', scheduleSave);
+document.addEventListener('change', scheduleSave);
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Сбросить все значения к настройкам по умолчанию? Это удалит сохранённые изменения в этом браузере.')){
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    location.reload();
+  }
+});
+
+/* =========================================================
+   COMBAT ENGINE
+   ========================================================= */
+function makeCombatant(def){
+  return {
+    id:def.id, name:def.name, ac:def.ac, hpMax:def.hp, hp:def.hp,
+    atkBonus:def.atkBonus, numAtk:def.numAtk, dmgDice:def.dmgDice,
+    healer:def.healer, healDice:def.healDice, healThreshold:def.healThreshold,
+    healUsesLeft: def.healer ? (def.healUsesOverride||4) : 0,
+    huntersMark: def.huntersMark ? {...def.huntersMark} : null,
+    colossusSlayer: def.colossusSlayer ? {...def.colossusSlayer} : null,
+    divineSmite: def.divineSmite ? {...def.divineSmite, chargesLeft: def.divineSmite.charges} : null,
+    altAttack: def.altAttack ? {...def.altAttack, chargesLeft: def.altAttack.charges} : null,
+    markTargetId: null,
+    csUsedThisTurn: false,
+    alive:true
+  };
+}
+
+function makeEnemy(group, idx, globalIdx){
+  return {
+    id:'enemy'+globalIdx, name:`${group.label} #${idx+1}`, ac:group.ac, hpMax:group.hp, hp:group.hp,
+    atkBonus:group.atkBonus, numAtk:group.numAtk, dmgDice:group.dmg,
+    aoe: {enabled:group.aoeOn, targets:group.aoeTargets},
+    altAttacks: (group.altAttacks||[]).map(a=>({...a, chargesLeft:a.charges})),
+    alive:true
+  };
+}
+
+function pickTarget(list){
+  const alive = list.filter(c=>c.alive);
+  if(alive.length===0) return null;
+  alive.sort((a,b)=>a.hp-b.hp);
+  return alive[0];
+}
+function pickRandomTarget(list){
+  const alive = list.filter(c=>c.alive);
+  if(alive.length===0) return null;
+  return alive[Math.floor(Math.random()*alive.length)];
+}
+function pickRandomDistinct(list, n){
+  const alive = list.filter(c=>c.alive);
+  const shuffled = [...alive].sort(()=>Math.random()-0.5);
+  return shuffled.slice(0, Math.max(1, Math.min(n, alive.length)));
+}
+
+function resolvePartyAttack(attacker, target, toHit, dmgDice, log){
+  const roll = rollDie(20);
+  if(roll===1){
+    if(log) log.push({t:'miss', text:`${attacker.name} промахивается по «${target.name}» (натуральная 1).`});
+    return;
+  }
+  const total = roll + toHit;
+  const crit = roll===20;
+  if(crit || total >= target.ac){
+    const preHitFullHp = target.hp >= target.hpMax;
+    let dmg = rollDiceRaw(dmgDice, crit);
+    let extras = [];
+
+    if(attacker.huntersMark && attacker.huntersMark.enabled){
+      const prevAlive = attacker._lastEnemiesRef ? attacker._lastEnemiesRef.some(e=>e.id===attacker.markTargetId && e.alive) : false;
+      if(!attacker.markTargetId || !prevAlive) attacker.markTargetId = target.id;
+      if(attacker.markTargetId === target.id){
+        const hm = rollDiceRaw(attacker.huntersMark.die, crit);
+        dmg += hm;
+        extras.push(`Метка охотника +${hm}`);
+      }
+    }
+    if(attacker.colossusSlayer && attacker.colossusSlayer.enabled && !attacker.csUsedThisTurn && !preHitFullHp){
+      const cs = rollDiceRaw(attacker.colossusSlayer.die, false);
+      dmg += cs;
+      attacker.csUsedThisTurn = true;
+      extras.push(`Убийца Колоссов +${cs}`);
+    }
+    if(attacker.divineSmite && attacker.divineSmite.enabled && attacker.divineSmite.chargesLeft>0){
+      const sm = rollDiceRaw(attacker.divineSmite.die, crit);
+      dmg += sm;
+      attacker.divineSmite.chargesLeft--;
+      extras.push(`Кара +${sm}`);
+    }
+
+    target.hp -= dmg;
+    const extraTxt = extras.length ? ` [${extras.join(', ')}]` : '';
+    if(log) log.push({t:'hit', text:`${attacker.name} попадает по «${target.name}» (${roll}+${toHit}=${total}${crit?', КРИТ!':''}) — ${dmg} урона${extraTxt}. [${target.hp<=0?0:target.hp}/${target.hpMax} HP]`, feat: extras.length>0});
+    if(target.hp<=0){
+      target.hp=0; target.alive=false;
+      if(log) log.push({t:'down', text:`«${target.name}» выведен(а) из боя.`});
+    }
+  } else {
+    if(log) log.push({t:'miss', text:`${attacker.name} атакует «${target.name}» (${roll}+${toHit}=${total}) — промах.`});
+  }
+}
+
+function resolvePartyAttackAlt(attacker, target, toHit, dmgDice, log){
+  const roll = rollDie(20);
+  if(roll===1){
+    if(log) log.push({t:'miss', text:`${attacker.name} применяет ${attacker.altAttack.label} по «${target.name}» — промах (натуральная 1).`});
+    return;
+  }
+  const total = roll + toHit;
+  const crit = roll===20;
+  if(crit || total >= target.ac){
+    const dmg = rollDiceRaw(dmgDice, crit);
+    target.hp -= dmg;
+    if(log) log.push({t:'hit', text:`${attacker.name} — ${attacker.altAttack.label} по «${target.name}» (${roll}+${toHit}=${total}${crit?', КРИТ!':''}) — ${dmg} урона. [${target.hp<=0?0:target.hp}/${target.hpMax} HP]`, feat:true});
+    if(target.hp<=0){
+      target.hp=0; target.alive=false;
+      if(log) log.push({t:'down', text:`«${target.name}» выведен(а) из боя.`});
+    }
+  } else {
+    if(log) log.push({t:'miss', text:`${attacker.name} применяет ${attacker.altAttack.label} по «${target.name}» (${roll}+${toHit}=${total}) — промах.`});
+  }
+}
+
+function resolveEnemyAttack(attackerName, atkBonus, dmgDice, target, log){
+  const roll = rollDie(20);
+  if(roll===1){
+    if(log) log.push({t:'miss', text:`${attackerName} промахивается по «${target.name}» (натуральная 1).`});
+    return;
+  }
+  const total = roll + atkBonus;
+  const crit = roll===20;
+  if(crit || total >= target.ac){
+    const dmg = rollDiceRaw(dmgDice, crit);
+    target.hp -= dmg;
+    if(log) log.push({t:'hit', text:`${attackerName} попадает по «${target.name}» (${roll}+${atkBonus}=${total}${crit?', КРИТ!':''}) — ${dmg} урона. [${target.hp<=0?0:target.hp}/${target.hpMax} HP]`});
+    if(target.hp<=0){
+      target.hp=0; target.alive=false;
+      if(log) log.push({t:'down', text:`«${target.name}» выведен(а) из боя.`});
+    }
+  } else {
+    if(log) log.push({t:'miss', text:`${attackerName} атакует «${target.name}» (${roll}+${atkBonus}=${total}) — промах.`});
+  }
+}
+
+function performEnemyRoutine(en, atkBonus, dmgDice, numAtk, aoe, party, log, altLabel){
+  const displayName = altLabel ? `${en.name} (${altLabel})` : en.name;
+  if(aoe && aoe.enabled){
+    const targets = pickRandomDistinct(party, aoe.targets||1);
+    targets.forEach(t => resolveEnemyAttack(displayName, atkBonus, dmgDice, t, log));
+  } else {
+    for(let a=0; a<numAtk; a++){
+      const tgt = pickRandomTarget(party);
+      if(!tgt) break;
+      resolveEnemyAttack(displayName, atkBonus, dmgDice, tgt, log);
+    }
+  }
+}
+
+function runTrialWithCombatants(party, enemyGroups, roundCap, wantLog){
+  const enemies = [];
+  let gi = 0;
+  enemyGroups.forEach(group=>{
+    for(let i=0;i<group.count;i++){
+      enemies.push(makeEnemy(group, i, gi++));
+    }
+  });
+  party.forEach(pc => pc._lastEnemiesRef = enemies);
+
+  const log = wantLog ? [] : null;
+  const hpTrack = [];
+  let round = 0;
+  let outcome = 'draw';
+
+  while(round < roundCap){
+    round++;
+    const roundLog = wantLog ? [] : null;
+    if(!party.some(p=>p.alive)){ outcome='enemies'; round--; break; }
+    if(!enemies.some(e=>e.alive)){ outcome='party'; round--; break; }
+
+    for(const pc of party){
+      pc.csUsedThisTurn = false;
+      if(!pc.alive) continue;
+      if(!enemies.some(e=>e.alive)) break;
+
+      if(pc.healer && pc.healUsesLeft>0){
+        const hurt = party.filter(p=>p.alive && p.hp/p.hpMax <= pc.healThreshold);
+        if(hurt.length>0){
+          hurt.sort((a,b)=>(a.hp/a.hpMax)-(b.hp/b.hpMax));
+          const target = hurt[0];
+          const healAmt = rollDiceRaw(pc.healDice,false);
+          target.hp = Math.min(target.hpMax, target.hp + healAmt);
+          pc.healUsesLeft--;
+          if(roundLog) roundLog.push({t:'heal', text:`${pc.name} лечит «${target.name}» на ${healAmt} HP. [${target.hp}/${target.hpMax}]`});
+          continue;
+        }
+      }
+
+      let toHit = pc.atkBonus, dmgDice = pc.dmgDice, usingAlt = false;
+      if(pc.altAttack && pc.altAttack.enabled && pc.altAttack.chargesLeft>0){
+        toHit = pc.altAttack.atkBonus; dmgDice = pc.altAttack.dmgDice; usingAlt = true;
+      }
+
+      for(let a=0; a<pc.numAtk; a++){
+        const tgt = pickTarget(enemies);
+        if(!tgt) break;
+        if(usingAlt){
+          pc.altAttack.chargesLeft--;
+          resolvePartyAttackAlt(pc, tgt, toHit, dmgDice, roundLog);
+          break;
+        } else {
+          resolvePartyAttack(pc, tgt, toHit, dmgDice, roundLog);
+        }
+      }
+    }
+
+    for(const en of enemies){
+      if(!en.alive) continue;
+      if(!party.some(p=>p.alive)) break;
+      const useAlt = en.altAttacks.find(a=>a.enabled && a.chargesLeft>0);
+      if(useAlt){
+        useAlt.chargesLeft--;
+        performEnemyRoutine(en, useAlt.atkBonus, useAlt.dmgDice, useAlt.numAtk, {enabled:useAlt.aoeOn, targets:useAlt.aoeTargets}, party, roundLog, useAlt.label);
+      } else {
+        performEnemyRoutine(en, en.atkBonus, en.dmgDice, en.numAtk, en.aoe, party, roundLog, null);
+      }
+    }
+
+    const totalPartyHP = party.reduce((s,p)=>s+Math.max(0,p.hp),0);
+    hpTrack.push(totalPartyHP);
+    if(log) log.push({round, lines: roundLog});
+
+    const pAlive = party.some(p=>p.alive);
+    const eAlive = enemies.some(e=>e.alive);
+    if(!pAlive){ outcome='enemies'; break; }
+    if(!eAlive){ outcome='party'; break; }
+  }
+
+  return {
+    outcome, rounds:round,
+    pcsRemaining: party.filter(p=>p.alive).length,
+    enemiesRemaining: enemies.filter(e=>e.alive).length,
+    hpTrack, log,
+    totalPCs: party.length, totalEnemies: enemies.length
+  };
+}
+
+function runSingleTrialWrapped(partyDefs, enemyGroups, roundCap, wantLog){
+  const combatants = partyDefs.map(makeCombatant);
+  return runTrialWithCombatants(combatants, enemyGroups, roundCap, wantLog);
+}
+
+/* =========================================================
+   RUN SIMULATION
+   ========================================================= */
+const runBtn = document.getElementById('runBtn');
+const resultsSection = document.getElementById('results-section');
+let lastPartyDefs = null, lastEnemyGroups = null, lastRoundCap = 25;
+
+runBtn.addEventListener('click', ()=>{
+  runBtn.disabled = true;
+  runBtn.textContent = '⚔ Считаем броски кубиков...';
+  setTimeout(()=>{
+    doRun();
+    runBtn.disabled = false;
+    runBtn.textContent = '⚔ Запустить симуляцию';
+  }, 30);
+});
+
+function doRun(){
+  if(partyCardsEl.querySelectorAll('.card').length===0 && companionsEl.querySelectorAll('.card').length===0){
+    alert('В отряде нет ни одного участника.');
+    return;
+  }
+  const partyDefs = readPartyFromUI();
+  if(partyDefs.length===0){
+    alert('Никто из отряда не отмечен как «участвует в бою».');
+    return;
+  }
+  const enemyGroups = readEnemyGroupsFromUI();
+  const numTrials = Math.max(1, parseInt(document.getElementById('numTrials').value)||500);
+  const roundCap = Math.max(1, parseInt(document.getElementById('roundCap').value)||25);
+
+  lastPartyDefs = partyDefs; lastEnemyGroups = enemyGroups; lastRoundCap = roundCap;
+
+  let wins=0, losses=0, draws=0;
+  let roundsWin=[], roundsLoss=[];
+  let pcsRemainingOnWin=[], enemiesRemainingOnLoss=[];
+  let histRounds = {};
+  let hpTracks = [];
+
+  for(let t=0;t<numTrials;t++){
+    const res = runSingleTrialWrapped(partyDefs, enemyGroups, roundCap, false);
+    if(res.outcome==='party'){ wins++; roundsWin.push(res.rounds); pcsRemainingOnWin.push(res.pcsRemaining);
+      histRounds[res.rounds] = histRounds[res.rounds]||{win:0,loss:0}; histRounds[res.rounds].win++;
+    } else if(res.outcome==='enemies'){ losses++; roundsLoss.push(res.rounds); enemiesRemainingOnLoss.push(res.enemiesRemaining);
+      histRounds[res.rounds] = histRounds[res.rounds]||{win:0,loss:0}; histRounds[res.rounds].loss++;
+    } else { draws++; }
+    hpTracks.push(res.hpTrack);
+  }
+
+  const avg = arr => arr.length? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+
+  renderStats({
+    numTrials, wins, losses, draws,
+    avgRoundsWin: avg(roundsWin), avgRoundsLoss: avg(roundsLoss),
+    avgPcsRemaining: avg(pcsRemainingOnWin), avgEnemiesRemaining: avg(enemiesRemainingOnLoss)
+  });
+  renderHistogram(histRounds, numTrials, roundCap);
+  renderHpChart(hpTracks, roundCap);
+  renderSampleBattle();
+
+  resultsSection.classList.add('show');
+  resultsSection.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* =========================================================
+   RENDER: stats strip
+   ========================================================= */
+function renderStats(s){
+  const winPct = (s.wins/s.numTrials*100).toFixed(1);
+  const lossPct = (s.losses/s.numTrials*100).toFixed(1);
+  const drawPct = (s.draws/s.numTrials*100).toFixed(1);
+
+  document.getElementById('trialsRanLabel').textContent = `по итогам ${s.numTrials} симуляций`;
+
+  const strip = document.getElementById('statStrip');
+  strip.innerHTML = `
+    <div class="stat"><div class="num verdi">${winPct}%</div><div class="lbl">Побед отряда</div></div>
+    <div class="stat"><div class="num blood">${lossPct}%</div><div class="lbl">Поражений отряда</div></div>
+    <div class="stat"><div class="num">${drawPct}%</div><div class="lbl">Затяжной бой (лимит раундов)</div></div>
+    <div class="stat"><div class="num verdi">${s.avgRoundsWin? s.avgRoundsWin.toFixed(1): '—'}</div><div class="lbl">Раундов до победы (в среднем)</div></div>
+    <div class="stat"><div class="num blood">${s.avgRoundsLoss? s.avgRoundsLoss.toFixed(1): '—'}</div><div class="lbl">Раундов до поражения (в среднем)</div></div>
+    <div class="stat"><div class="num">${s.avgPcsRemaining? s.avgPcsRemaining.toFixed(1): '—'}</div><div class="lbl">Живых персонажей при победе</div></div>
+    <div class="stat"><div class="num">${s.avgEnemiesRemaining? s.avgEnemiesRemaining.toFixed(1): '—'}</div><div class="lbl">Живых противников при поражении</div></div>
+  `;
+}
+
+/* =========================================================
+   RENDER: histogram
+   ========================================================= */
+function renderHistogram(histRounds, numTrials, roundCap){
+  const canvas = document.getElementById('histCanvas');
+  const dpr = window.devicePixelRatio||1;
+  const cssW = canvas.parentElement.clientWidth;
+  const cssH = 220;
+  canvas.width = cssW*dpr; canvas.height = cssH*dpr;
+  canvas.style.height = cssH+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  const maxRound = roundCap;
+  const barW = cssW / maxRound;
+  let maxVal = 0;
+  for(let r=1;r<=maxRound;r++){
+    const v = histRounds[r] || {win:0,loss:0};
+    maxVal = Math.max(maxVal, v.win, v.loss);
+  }
+  if(maxVal===0) maxVal = 1;
+
+  const baseline = cssH - 24;
+  ctx.strokeStyle = '#3a3346';
+  ctx.beginPath(); ctx.moveTo(0,baseline); ctx.lineTo(cssW,baseline); ctx.stroke();
+
+  for(let r=1;r<=maxRound;r++){
+    const v = histRounds[r] || {win:0,loss:0};
+    const x = (r-1)*barW;
+    const wH = (v.win/maxVal) * (baseline-10);
+    const lH = (v.loss/maxVal) * (baseline-10);
+    ctx.fillStyle = '#5c9384';
+    ctx.fillRect(x+barW*0.12, baseline-wH, barW*0.34, wH);
+    ctx.fillStyle = '#b8453f';
+    ctx.fillRect(x+barW*0.54, baseline-lH, barW*0.34, lH);
+    if(maxRound<=30 || r%2===0){
+      ctx.fillStyle = '#7d7189';
+      ctx.font = '10px JetBrains Mono';
+      ctx.textAlign='center';
+      ctx.fillText(r, x+barW/2, baseline+14);
+    }
+  }
+}
+
+/* =========================================================
+   RENDER: hp over time
+   ========================================================= */
+function renderHpChart(hpTracks, roundCap){
+  const canvas = document.getElementById('hpCanvas');
+  const dpr = window.devicePixelRatio||1;
+  const cssW = canvas.parentElement.clientWidth;
+  const cssH = 200;
+  canvas.width = cssW*dpr; canvas.height = cssH*dpr;
+  canvas.style.height = cssH+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  const perRound = [];
+  for(let r=0;r<roundCap;r++){
+    const vals = [];
+    hpTracks.forEach(track=>{ if(track[r]!==undefined) vals.push(track[r]); });
+    if(vals.length===0) continue;
+    vals.sort((a,b)=>a-b);
+    const median = vals[Math.floor(vals.length/2)];
+    perRound.push({round:r+1, median, n:vals.length});
+  }
+  if(perRound.length===0) return;
+  const maxHp = Math.max(...perRound.map(p=>p.median), 1);
+  const baseline = cssH-24, top=14;
+  const stepX = cssW/Math.max(1,perRound.length-1||1);
+
+  ctx.strokeStyle = '#3a3346';
+  ctx.beginPath(); ctx.moveTo(0,baseline); ctx.lineTo(cssW,baseline); ctx.stroke();
+
+  ctx.beginPath();
+  perRound.forEach((p,i)=>{
+    const x = i*stepX;
+    const y = baseline - (p.median/maxHp)*(baseline-top);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = '#c49a4a';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#c49a4a';
+  perRound.forEach((p,i)=>{
+    if(i%2!==0 && perRound.length>16) return;
+    const x = i*stepX;
+    const y = baseline - (p.median/maxHp)*(baseline-top);
+    ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2); ctx.fill();
+  });
+
+  ctx.fillStyle = '#7d7189';
+  ctx.font = '10px JetBrains Mono';
+  ctx.textAlign = 'left';
+  ctx.fillText('HP отряда: '+Math.round(maxHp), 4, 12);
+}
+
+/* =========================================================
+   RENDER: sample battle log
+   ========================================================= */
+function renderSampleBattle(){
+  if(!lastPartyDefs) return;
+  const res = runSingleTrialWrapped(lastPartyDefs, lastEnemyGroups, lastRoundCap, true);
+  const body = document.getElementById('ledgerBody');
+  body.innerHTML = '';
+  const numerals = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];
+  res.log.forEach(entry=>{
+    const block = document.createElement('div');
+    block.className = 'round-block';
+    const label = entry.round<=20 ? numerals[entry.round-1] : entry.round;
+    block.innerHTML = `<div class="round-num">Раунд ${label}</div>`;
+    entry.lines.forEach(line=>{
+      const p = document.createElement('div');
+      p.className = 'log-line';
+      const cls = line.feat ? 'feat' : (line.t==='hit'?'hit':line.t==='heal'?'heal':line.t==='down'?'down':'miss');
+      p.innerHTML = `<span class="${cls}">${line.text}</span>`;
+      block.appendChild(p);
+    });
+    body.appendChild(block);
+  });
+  const finalMsg = document.createElement('div');
+  finalMsg.className = 'round-block';
+  finalMsg.innerHTML = `<div class="round-num">Итог</div><div class="log-line">${
+    res.outcome==='party' ? `<span class="heal">Отряд побеждает на раунде ${res.rounds}. В строю: ${res.pcsRemaining}/${res.totalPCs}.</span>` :
+    res.outcome==='enemies' ? `<span class="down">Отряд повержен на раунде ${res.rounds}. Противников осталось: ${res.enemiesRemaining}/${res.totalEnemies}.</span>` :
+    `<span class="miss">Бой не завершён за ${lastRoundCap} раундов.</span>`
+  }</div>`;
+  body.appendChild(finalMsg);
+}
+
+document.getElementById('rerollBtn').addEventListener('click', renderSampleBattle);
+
+</script>
+</body>
+</html>
