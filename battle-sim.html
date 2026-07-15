@@ -467,42 +467,42 @@ footer{
    ========================================================= */
 const PARTY_DEFAULT = [
   {
-    id:'cassandra', name:'Кассандра', role:'Следопыт 5 / Монах 2 (7 ур.)',
-    ac:16, hp:58, atkBonus:8, numAtk:3, dmgDice:'1d6+5',
+    id:'cassandra', name:'Кассандра', role:'Следопыт / Монах',
+    ac:16, hp:58, atkBonus:8, numAtk:3, dmgDice:'1d6+5', saveBonus:7,
     healer:false,
     huntersMark:{enabled:true, die:'1d6'},
     colossusSlayer:{enabled:true, die:'1d8'}
   },
   {
-    id:'elion', name:'Элион', role:'Паладин Мести 7 ур. (танк)',
-    ac:20, hp:60, atkBonus:7, numAtk:2, dmgDice:'1d10+4',
+    id:'elion', name:'Элион', role:'Паладин Мести (танк)',
+    ac:20, hp:60, atkBonus:7, numAtk:2, dmgDice:'1d10+4', saveBonus:4,
     healer:false,
     divineSmite:{enabled:true, die:'2d8', charges:4}
   },
   {
-    id:'eanasir', name:'Эа-насир', role:'Клирик Обмана 7 ур. (хилер)',
-    ac:16, hp:45, atkBonus:6, numAtk:2, dmgDice:'1d8+3',
+    id:'eanasir', name:'Эа-насир', role:'Клирик Обмана (хилер)',
+    ac:16, hp:45, atkBonus:6, numAtk:2, dmgDice:'1d8+3', saveBonus:2,
     healer:true, healDice:'2d8+3', healThreshold:0.5
   },
   {
-    id:'vrakir', name:'Вракир Безмолвный', role:'Некромант 7 ур. (заклинатель)',
-    ac:12, hp:51, atkBonus:6, numAtk:1, dmgDice:'3d6',
+    id:'vrakir', name:'Вракир Безмолвный', role:'Некромант (заклинатель)',
+    ac:12, hp:51, atkBonus:6, numAtk:1, dmgDice:'3d6', saveBonus:2,
     healer:false,
     altAttack:{enabled:true, label:'Dead Mist Lash (3 круг)', atkBonus:6, dmgDice:'3d8', charges:2}
   },
   {
-    id:'aris', name:'Арис', role:'Друид Круга Жертвоприношений 7 ур. (хилер/урон)',
-    ac:14, hp:52, atkBonus:7, numAtk:1, dmgDice:'2d8+4',
+    id:'aris', name:'Арис', role:'Друид Круга Жертвоприношений (хилер/урон)',
+    ac:14, hp:52, atkBonus:7, numAtk:1, dmgDice:'2d8+4', saveBonus:1,
     healer:true, healDice:'2d8+4', healThreshold:0.5
   },
   {
-    id:'maximilian', name:'Максимилиан', role:'Пси-Воин 7 ур. (танк/урон)',
-    ac:18, hp:60, atkBonus:7, numAtk:2, dmgDice:'1d10+4',
+    id:'maximilian', name:'Максимилиан', role:'Пси-Воин (танк/урон)',
+    ac:18, hp:60, atkBonus:7, numAtk:2, dmgDice:'1d10+4', saveBonus:1,
     healer:false
   }
 ];
 
-const COMPANION_DEFAULT_STATS = {ac:16, hp:45, atkBonus:7, numAtk:2, dmgDice:'1d10+4'};
+const COMPANION_DEFAULT_STATS = {ac:16, hp:45, atkBonus:7, numAtk:2, dmgDice:'1d10+4', saveBonus:2};
 const STORAGE_KEY = 'dndBattleSimState_v2';
 
 /* =========================================================
@@ -550,6 +550,7 @@ function collectPartyState(){
       id: card.dataset.id,
       ac:g('.f-ac').value, hp:g('.f-hp').value, atkBonus:g('.f-atkbonus').value,
       numAtk:g('.f-numatk').value, dmgDice:g('.f-dmg').value,
+      saveBonus:g('.f-savebonus') ? g('.f-savebonus').value : undefined,
       included: g('.f-included') ? g('.f-included').checked : true
     };
     if(g('.f-healdice')){ s.healDice=g('.f-healdice').value; s.healUses=g('.f-healuses').value; }
@@ -565,7 +566,8 @@ function collectCompanionsState(){
     name:card.querySelector('.c-name').value, role:card.querySelector('.c-role').value,
     ac:card.querySelector('.f-ac').value, hp:card.querySelector('.f-hp').value,
     atkBonus:card.querySelector('.f-atkbonus').value, numAtk:card.querySelector('.f-numatk').value,
-    dmgDice:card.querySelector('.f-dmg').value, included:card.querySelector('.f-included').checked
+    dmgDice:card.querySelector('.f-dmg').value, saveBonus:card.querySelector('.f-savebonus').value,
+    included:card.querySelector('.f-included').checked
   }));
 }
 function collectEnemyGroupsState(){
@@ -575,11 +577,13 @@ function collectEnemyGroupsState(){
     atkBonus:g.querySelector('.g-atkbonus').value, numAtk:g.querySelector('.g-numatk').value,
     dmg:g.querySelector('.g-dmg').value, count:g.querySelector('.g-count').value,
     aoeOn:g.querySelector('.g-aoe-on').checked, aoeTargets:g.querySelector('.g-aoe-targets').value,
+    aoeDC:g.querySelector('.g-aoe-dc').value, aoeHalf:g.querySelector('.g-aoe-half').checked,
     altAttacks:[...g.querySelectorAll('.alt-attack-block')].map(a=>({
       label:a.querySelector('.a-label').value, enabled:a.querySelector('.a-on').checked,
       atkBonus:a.querySelector('.a-bonus').value, dmgDice:a.querySelector('.a-dmg').value,
       numAtk:a.querySelector('.a-numatk').value, charges:a.querySelector('.a-charges').value,
-      aoeOn:a.querySelector('.a-aoe-on').checked, aoeTargets:a.querySelector('.a-aoe-targets').value
+      aoeOn:a.querySelector('.a-aoe-on').checked, aoeTargets:a.querySelector('.a-aoe-targets').value,
+      aoeDC:a.querySelector('.a-aoe-dc').value, aoeHalf:a.querySelector('.a-aoe-half').checked
     }))
   }));
 }
@@ -627,6 +631,7 @@ function mergeDef(def, override){
   m.atkBonus = val(override.atkBonus, def.atkBonus);
   m.numAtk = val(override.numAtk, def.numAtk);
   m.dmgDice = val(override.dmgDice, def.dmgDice);
+  m.saveBonus = val(override.saveBonus, val(def.saveBonus, 2));
   m.included = override.included !== undefined ? override.included : true;
   if(def.healer){
     m.healDice = val(override.healDice, def.healDice);
@@ -733,6 +738,7 @@ function buildCard(def, override){
     <div class="field-row"><label>Бонус атаки</label><input type="number" class="f-atkbonus" value="${m.atkBonus}"></div>
     <div class="field-row"><label>Атак за раунд</label><input type="number" class="f-numatk" value="${m.numAtk}"></div>
     <div class="field-row"><label>Урон за атаку</label><input type="text" class="f-dmg" value="${m.dmgDice}"></div>
+    <div class="field-row" title="Используется, когда противник бьёт «по площади» (спасбросок вместо атаки)"><label>Бонус спасброска</label><input type="number" class="f-savebonus" value="${m.saveBonus}"></div>
     ${def.healer ? `
     <div class="toggle-row" style="border-top:1px dashed var(--line);flex-direction:column;align-items:stretch;gap:6px;">
       <div class="field-row"><label>Лечение (кубик)</label><input type="text" class="f-healdice" value="${m.healDice}" style="width:82px;"></div>
@@ -767,6 +773,7 @@ function buildCompanionCard(def){
     <div class="field-row"><label>Бонус атаки</label><input type="number" class="f-atkbonus" value="${def.atkBonus}"></div>
     <div class="field-row"><label>Атак за раунд</label><input type="number" class="f-numatk" value="${def.numAtk}"></div>
     <div class="field-row"><label>Урон за атаку</label><input type="text" class="f-dmg" value="${def.dmgDice}"></div>
+    <div class="field-row" title="Используется, когда противник бьёт «по площади» (спасбросок вместо атаки)"><label>Бонус спасброска</label><input type="number" class="f-savebonus" value="${val(def.saveBonus,2)}"></div>
   `;
   div.querySelector('.remove-card-btn').addEventListener('click', ()=>{ div.remove(); scheduleSave(); });
   companionsEl.appendChild(div);
@@ -787,8 +794,10 @@ function readPartyFromUI(){
     const atkBonus = parseInt(card.querySelector('.f-atkbonus').value)||0;
     const numAtk = parseInt(card.querySelector('.f-numatk').value)||1;
     const dmgDice = card.querySelector('.f-dmg').value || '1d6';
+    const saveBonusEl = card.querySelector('.f-savebonus');
+    const saveBonus = saveBonusEl ? (parseInt(saveBonusEl.value)||0) : 2;
 
-    const entry = {id, name:def.name, role:def.role, ac, hp, atkBonus, numAtk, dmgDice,
+    const entry = {id, name:def.name, role:def.role, ac, hp, atkBonus, numAtk, dmgDice, saveBonus,
       healer:false, healDice:'', healThreshold:0, healUsesOverride:0,
       huntersMark:null, colossusSlayer:null, divineSmite:null, altAttack:null};
 
@@ -827,7 +836,8 @@ function readPartyFromUI(){
     const atkBonus = parseInt(card.querySelector('.f-atkbonus').value)||0;
     const numAtk = parseInt(card.querySelector('.f-numatk').value)||1;
     const dmgDice = card.querySelector('.f-dmg').value || '1d6';
-    list.push({id:card.dataset.id, name, role:'', ac, hp, atkBonus, numAtk, dmgDice,
+    const saveBonus = parseInt(card.querySelector('.f-savebonus').value)||0;
+    list.push({id:card.dataset.id, name, role:'', ac, hp, atkBonus, numAtk, dmgDice, saveBonus,
       healer:false, healDice:'', healThreshold:0, healUsesOverride:0,
       huntersMark:null, colossusSlayer:null, divineSmite:null, altAttack:null});
   });
@@ -842,7 +852,7 @@ const enemyGroupsEl = document.getElementById('enemyGroups');
 let groupCounter = 0;
 
 function addAltAttackBlock(container, prefill){
-  const p = prefill || {label:'Особая атака', enabled:true, atkBonus:6, dmgDice:'2d6', numAtk:1, charges:2, aoeOn:false, aoeTargets:3};
+  const p = prefill || {label:'Особая атака', enabled:true, atkBonus:6, dmgDice:'2d6', numAtk:1, charges:2, aoeOn:false, aoeTargets:3, aoeDC:14, aoeHalf:true};
   const div = document.createElement('div');
   div.className = 'alt-attack-block';
   div.innerHTML = `
@@ -857,10 +867,14 @@ function addAltAttackBlock(container, prefill){
       <div class="mini-field"><label>Атак/применение</label><input type="number" class="a-numatk" value="${p.numAtk}"></div>
       <div class="mini-field"><label>Зарядов за бой</label><input type="number" class="a-charges" value="${p.charges}"></div>
     </div>
+    <div class="feature-sub" style="margin-top:10px;">«Бонус атаки» игнорируется, если включена атака по площади ниже — она использует Save DC вместо броска атаки</div>
     <div class="aoe-row">
       <label class="switch violet"><input type="checkbox" class="a-aoe-on" ${p.aoeOn?'checked':''}><span class="slider"></span></label>
       <span>по площади —</span>
-      <input type="number" class="a-aoe-targets" value="${p.aoeTargets}"> целей за раз
+      <input type="number" class="a-aoe-targets" value="${val(p.aoeTargets,3)}"> целей,
+      <label>DC</label><input type="number" class="a-aoe-dc" value="${val(p.aoeDC,14)}">
+      <label class="switch violet"><input type="checkbox" class="a-aoe-half" ${p.aoeHalf!==false?'checked':''}><span class="slider"></span></label>
+      <span>половина урона при успехе</span>
     </div>
     <button class="remove-alt-btn">✕ убрать тип атаки</button>
   `;
@@ -871,7 +885,7 @@ function addAltAttackBlock(container, prefill){
 function addEnemyGroup(prefill){
   groupCounter++;
   const idx = groupCounter;
-  const p = prefill || {label:'Тип '+String.fromCharCode(64+idx), ac:15, hp:30, atkBonus:6, numAtk:2, dmg:'1d8+3', count:4, aoeOn:false, aoeTargets:3, altAttacks:[]};
+  const p = prefill || {label:'Тип '+String.fromCharCode(64+idx), ac:15, hp:30, atkBonus:6, numAtk:2, dmg:'1d8+3', count:4, aoeOn:false, aoeTargets:3, aoeDC:14, aoeHalf:true, altAttacks:[]};
   const div = document.createElement('div');
   div.className = 'enemy-panel';
   div.dataset.groupId = idx;
@@ -892,6 +906,7 @@ function addEnemyGroup(prefill){
       <div class="enemy-field">
         <label>Attack Bonus</label>
         <input type="number" class="g-atkbonus" value="${p.atkBonus}" min="-5" max="20">
+        <div class="hint">не используется, если ниже включена атака «по площади»</div>
       </div>
       <div class="enemy-field">
         <label>Number of Attacks</label>
@@ -910,7 +925,10 @@ function addEnemyGroup(prefill){
     <div class="aoe-row">
       <label class="switch violet"><input type="checkbox" class="g-aoe-on" ${p.aoeOn?'checked':''}><span class="slider"></span></label>
       <span>основная атака — по площади —</span>
-      <input type="number" class="g-aoe-targets" value="${p.aoeTargets||3}"> целей за раз
+      <input type="number" class="g-aoe-targets" value="${val(p.aoeTargets,3)}"> целей,
+      <label>DC</label><input type="number" class="g-aoe-dc" value="${val(p.aoeDC,14)}">
+      <label class="switch violet"><input type="checkbox" class="g-aoe-half" ${p.aoeHalf!==false?'checked':''}><span class="slider"></span></label>
+      <span>половина урона при успехе</span>
     </div>
     <div class="alt-attacks-container"></div>
     <button class="add-alt-attack-btn">+ Добавить тип атаки</button>
@@ -953,6 +971,8 @@ function readEnemyGroupsFromUI(){
     count: parseInt(g.querySelector('.g-count').value)||1,
     aoeOn: g.querySelector('.g-aoe-on').checked,
     aoeTargets: parseInt(g.querySelector('.g-aoe-targets').value)||1,
+    aoeDC: parseInt(g.querySelector('.g-aoe-dc').value)||14,
+    aoeHalf: g.querySelector('.g-aoe-half').checked,
     altAttacks: [...g.querySelectorAll('.alt-attack-block')].map(a=>({
       label: a.querySelector('.a-label').value || 'Особая атака',
       enabled: a.querySelector('.a-on').checked,
@@ -961,7 +981,9 @@ function readEnemyGroupsFromUI(){
       numAtk: parseInt(a.querySelector('.a-numatk').value)||1,
       charges: parseInt(a.querySelector('.a-charges').value)||0,
       aoeOn: a.querySelector('.a-aoe-on').checked,
-      aoeTargets: parseInt(a.querySelector('.a-aoe-targets').value)||1
+      aoeTargets: parseInt(a.querySelector('.a-aoe-targets').value)||1,
+      aoeDC: parseInt(a.querySelector('.a-aoe-dc').value)||14,
+      aoeHalf: a.querySelector('.a-aoe-half').checked
     }))
   }));
 }
@@ -1014,6 +1036,7 @@ function makeCombatant(def){
   return {
     id:def.id, name:def.name, ac:def.ac, hpMax:def.hp, hp:def.hp,
     atkBonus:def.atkBonus, numAtk:def.numAtk, dmgDice:def.dmgDice,
+    saveBonus: def.saveBonus!==undefined ? def.saveBonus : 2,
     healer:def.healer, healDice:def.healDice, healThreshold:def.healThreshold,
     healUsesLeft: def.healer ? (def.healUsesOverride||4) : 0,
     huntersMark: def.huntersMark ? {...def.huntersMark} : null,
@@ -1030,7 +1053,7 @@ function makeEnemy(group, idx, globalIdx){
   return {
     id:'enemy'+globalIdx, name:`${group.label} #${idx+1}`, ac:group.ac, hpMax:group.hp, hp:group.hp,
     atkBonus:group.atkBonus, numAtk:group.numAtk, dmgDice:group.dmg,
-    aoe: {enabled:group.aoeOn, targets:group.aoeTargets},
+    aoe: {enabled:group.aoeOn, targets:group.aoeTargets, dc:group.aoeDC, halfOnSave:group.aoeHalf},
     altAttacks: (group.altAttacks||[]).map(a=>({...a, chargesLeft:a.charges})),
     alive:true
   };
@@ -1142,11 +1165,31 @@ function resolveEnemyAttack(attackerName, atkBonus, dmgDice, target, log){
   }
 }
 
+// Area attacks in D&D use a save DC, not an attack roll: every target in the
+// area rolls its own saving throw against the DC. On a failed save it takes
+// full damage; on a success it takes half (or none, if halfOnSave is off).
+// There is no crit/fumble equivalent for saving throws.
+function resolveSaveAttack(attackerName, dc, dmgDice, halfOnSave, target, log){
+  const saveBonus = target.saveBonus || 0;
+  const roll = rollDie(20);
+  const total = roll + saveBonus;
+  const succeeded = total >= dc;
+  const fullDmg = rollDiceRaw(dmgDice, false);
+  const dmg = succeeded ? (halfOnSave ? Math.floor(fullDmg/2) : 0) : fullDmg;
+  target.hp -= dmg;
+  const verdict = succeeded ? 'спасбросок пройден' : 'спасбросок провален';
+  if(log) log.push({t: dmg>0 ? 'hit':'miss', text:`${attackerName} — атака по площади на «${target.name}» (спасбросок ${roll}+${saveBonus}=${total} против DC ${dc}, ${verdict}) — ${dmg} урона. [${target.hp<=0?0:target.hp}/${target.hpMax} HP]`});
+  if(target.hp<=0){
+    target.hp=0; target.alive=false;
+    if(log) log.push({t:'down', text:`«${target.name}» выведен(а) из боя.`});
+  }
+}
+
 function performEnemyRoutine(en, atkBonus, dmgDice, numAtk, aoe, party, log, altLabel){
   const displayName = altLabel ? `${en.name} (${altLabel})` : en.name;
   if(aoe && aoe.enabled){
     const targets = pickRandomDistinct(party, aoe.targets||1);
-    targets.forEach(t => resolveEnemyAttack(displayName, atkBonus, dmgDice, t, log));
+    targets.forEach(t => resolveSaveAttack(displayName, aoe.dc||14, dmgDice, aoe.halfOnSave!==false, t, log));
   } else {
     for(let a=0; a<numAtk; a++){
       const tgt = pickRandomTarget(party);
@@ -1219,7 +1262,7 @@ function runTrialWithCombatants(party, enemyGroups, roundCap, wantLog){
       const useAlt = en.altAttacks.find(a=>a.enabled && a.chargesLeft>0);
       if(useAlt){
         useAlt.chargesLeft--;
-        performEnemyRoutine(en, useAlt.atkBonus, useAlt.dmgDice, useAlt.numAtk, {enabled:useAlt.aoeOn, targets:useAlt.aoeTargets}, party, roundLog, useAlt.label);
+        performEnemyRoutine(en, useAlt.atkBonus, useAlt.dmgDice, useAlt.numAtk, {enabled:useAlt.aoeOn, targets:useAlt.aoeTargets, dc:useAlt.aoeDC, halfOnSave:useAlt.aoeHalf}, party, roundLog, useAlt.label);
       } else {
         performEnemyRoutine(en, en.atkBonus, en.dmgDice, en.numAtk, en.aoe, party, roundLog, null);
       }
