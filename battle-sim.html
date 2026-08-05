@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Симулятор боя — Отряд Кассандры</title>
+<title>Симулятор боя - Одиссея Повелителей Драконов</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -422,7 +422,7 @@ footer{
   <button class="reset-link" id="resetBtn">⟲ Сбросить всё</button>
   <div class="eyebrow">D&D 2024 · Симулятор Столкновений</div>
   <h1>Сколько раундов выдержит отряд?</h1>
-  <p>Отряд выходит на арену. Задайте параметры противников — симулятор прогонит сотни боёв и покажет, сколько раундов в среднем продержится каждая сторона. Все изменения сохраняются автоматически в этом браузере.</p>
+  <p>Задайте параметры противников — симулятор прогонит сотни боёв и покажет, сколько раундов в среднем продержится каждая сторона.</p>
   <div class="rule"></div>
 </header>
 
@@ -433,17 +433,17 @@ footer{
     <div class="section-head">
       <span class="section-num">I</span>
       <h2>Отряд</h2>
-      <span class="section-sub">значения, способности и участие в бою — редактируемые</span>
+      <span class="section-sub">значения, способности и участие в бою</span>
     </div>
     <div class="cards" id="partyCards"></div>
 
     <div class="section-head sub">
       <span class="section-num">I·б</span>
-      <h2>Приспешники</h2>
-      <span class="section-sub">призванные/управляемые существа — можно добавлять и убирать</span>
+      <h2>Компаньоны</h2>
+      <span class="section-sub">призванные/управляемые существа</span>
     </div>
     <div class="cards" id="companionCards"></div>
-    <button class="add-companion-btn" id="addCompanionBtn">+ Добавить приспешника</button>
+    <button class="add-companion-btn" id="addCompanionBtn">+ Добавить компаньона</button>
   </section>
 
   <!-- ================= ENEMY ================= -->
@@ -451,7 +451,7 @@ footer{
     <div class="section-head">
       <span class="section-num">II</span>
       <h2>Противники</h2>
-      <span class="section-sub">несколько типов врагов, доп. атаки с зарядами, площадные удары</span>
+      <span class="section-sub">несколько типов врагов, доп. атаки с зарядами, удары по площади</span>
     </div>
     <div class="enemy-groups" id="enemyGroups"></div>
     <button class="add-group-btn" id="addGroupBtn" style="margin-top:16px;">+ Добавить тип противника</button>
@@ -489,7 +489,7 @@ footer{
 
     <div class="chart-block">
       <h4>HP каждого участника боя по раундам</h4>
-      <div class="chart-sub">Точная хроника одного примера боя (того же, что и ниже) — сплошные линии — отряд и приспешники, пунктирные — группы противников (суммарный HP всех существ группы).</div>
+      <div class="chart-sub">Точная хроника одного примера боя (того же, что и ниже) — сплошные линии — отряд и компаньоны, пунктирные — группы противников (суммарный HP всех существ группы).</div>
       <canvas id="hpCanvas" height="280"></canvas>
       <div class="hp-legend" id="hpLegend"></div>
     </div>
@@ -808,8 +808,8 @@ function buildCompanionCard(def){
   div.dataset.id = id;
   const included = def.included !== undefined ? def.included : true;
   div.innerHTML = `
-    <button class="remove-card-btn" title="Убрать приспешника">✕</button>
-    <input type="text" class="c-name" value="${def.name||'Новый приспешник'}">
+    <button class="remove-card-btn" title="Убрать компаньона">✕</button>
+    <input type="text" class="c-name" value="${def.name||'Новый компаньон'}">
     <input type="text" class="c-role" value="${def.role||''}" placeholder="роль / описание">
     <div class="toggle-row included-row">
       <label>Участвует в бою</label>
@@ -877,7 +877,7 @@ function readPartyFromUI(){
   [...companionsEl.querySelectorAll('.card')].forEach(card=>{
     const included = card.querySelector('.f-included').checked;
     if(!included) return;
-    const name = card.querySelector('.c-name').value || 'Приспешник';
+    const name = card.querySelector('.c-name').value || 'Компаньон';
     const ac = parseInt(card.querySelector('.f-ac').value)||10;
     const hp = parseInt(card.querySelector('.f-hp').value)||1;
     const atkBonus = parseInt(card.querySelector('.f-atkbonus').value)||0;
@@ -1051,7 +1051,7 @@ if(SAVED && SAVED.companions && SAVED.companions.length){
   buildCompanionCard({name:'Дэднот', role:'Приспешник Вракира (немертвый страж)', ...COMPANION_DEFAULT_STATS});
 }
 document.getElementById('addCompanionBtn').addEventListener('click', ()=>{
-  buildCompanionCard({name:'Новый приспешник', role:'', ...COMPANION_DEFAULT_STATS});
+  buildCompanionCard({name:'Новый компаньон', role:'', ...COMPANION_DEFAULT_STATS});
   scheduleSave();
 });
 
