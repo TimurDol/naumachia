@@ -1048,7 +1048,7 @@ PARTY_DEFAULT.forEach(def=>{
 if(SAVED && SAVED.companions && SAVED.companions.length){
   SAVED.companions.forEach(c=> buildCompanionCard(c));
 } else {
-  buildCompanionCard({name:'Дэднот', role:'Приспешник Вракира (немертвый страж)', ...COMPANION_DEFAULT_STATS});
+  buildCompanionCard({name:'Дэднот', role:'Приспешник Вракира', ...COMPANION_DEFAULT_STATS});
 }
 document.getElementById('addCompanionBtn').addEventListener('click', ()=>{
   buildCompanionCard({name:'Новый компаньон', role:'', ...COMPANION_DEFAULT_STATS});
