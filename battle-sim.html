@@ -8,37 +8,63 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#141119;
-  --bg2:#1b1722;
-  --panel:#211c2b;
-  --panel2:#26202f;
-  --ink:#e9e1cd;
-  --muted:#a79bb0;
-  --muted2:#7d7189;
+  --bg:#0f1420;
+  --bg2:#161d2c;
+  --panel:#1a2233;
+  --panel2:#1f293c;
+  --ink:#ece3cf;
+  --muted:#9aa3b5;
+  --muted2:#727d94;
   --blood:#b8453f;
   --blood-dim:#7a3230;
-  --gold:#c49a4a;
+  --gold:#c9a24a;
   --gold-dim:#8a7038;
   --verdi:#5c9384;
   --verdi-dim:#3c6156;
   --violet:#8a6bb0;
   --violet-dim:#5c4a75;
-  --line:#3a3346;
+  --line:#2c3547;
   --shadow: 0 10px 30px rgba(0,0,0,0.45);
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
   background:
-    radial-gradient(circle at 15% 0%, rgba(196,154,74,0.07), transparent 40%),
-    radial-gradient(circle at 85% 10%, rgba(92,147,132,0.06), transparent 45%),
+    radial-gradient(circle at 15% 0%, rgba(201,162,74,0.09), transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(92,147,132,0.07), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(90,120,180,0.06), transparent 55%),
     var(--bg);
+  background-attachment:fixed;
   color:var(--ink);
   font-family:'Spectral', serif;
   line-height:1.55;
   min-height:100vh;
   padding-bottom:80px;
+  position:relative;
+  overflow-x:hidden;
 }
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(233,225,205,.5), transparent),
+    radial-gradient(1.5px 1.5px at 70% 15%, rgba(233,225,205,.35), transparent),
+    radial-gradient(1px 1px at 40% 70%, rgba(196,154,74,.4), transparent),
+    radial-gradient(1.5px 1.5px at 85% 60%, rgba(233,225,205,.3), transparent),
+    radial-gradient(1px 1px at 55% 45%, rgba(196,154,74,.3), transparent),
+    radial-gradient(1.5px 1.5px at 10% 85%, rgba(233,225,205,.3), transparent),
+    radial-gradient(1px 1px at 92% 88%, rgba(196,154,74,.35), transparent);
+  background-size:100% 100%;
+  animation:driftStars 60s linear infinite alternate;
+  opacity:.6;
+}
+@keyframes driftStars{
+  from{transform:translateY(0) scale(1);}
+  to{transform:translateY(-18px) scale(1.02);}
+}
+.wrap, header.hero{position:relative;z-index:1;}
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
 
 header.hero{
@@ -46,6 +72,14 @@ header.hero{
   text-align:center;
   border-bottom:1px solid var(--line);
   position:relative;
+}
+header.hero::after{
+  content:"";
+  position:absolute;left:0;right:0;bottom:-1px;height:10px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10' viewBox='0 0 40 10'%3E%3Cpath d='M0 9 L0 1 L9 1 L9 5 L5 5 L5 9 Z M20 9 L20 1 L29 1 L29 5 L25 5 L25 9 Z' fill='none' stroke='%23c9a24a' stroke-width='1' opacity='0.35'/%3E%3C/svg%3E");
+  background-repeat:repeat-x;
+  background-size:40px 10px;
+  opacity:.7;
 }
 .eyebrow{
   font-family:'JetBrains Mono',monospace;
@@ -72,6 +106,22 @@ h1{
 .rule{
   width:120px;height:1px;margin:26px auto 0;
   background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  position:relative;
+  overflow:visible;
+}
+.rule::before{
+  content:"✦";
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  color:var(--gold);font-size:11px;background:var(--bg);padding:0 8px;
+  animation:pulseGlow 3.5s ease-in-out infinite;
+}
+@keyframes pulseGlow{
+  0%,100%{opacity:.6;text-shadow:0 0 2px rgba(201,162,74,.3);}
+  50%{opacity:1;text-shadow:0 0 10px rgba(201,162,74,.8);}
+}
+.eyebrow{animation:pulseGlow 4s ease-in-out infinite;}
+h1{
+  text-shadow:0 0 24px rgba(201,162,74,.18);
 }
 .reset-link{
   position:absolute; top:20px; right:24px;
@@ -92,6 +142,12 @@ section{padding:56px 0;}
   border-bottom:1px solid var(--line);
   padding-bottom:14px;
   flex-wrap:wrap;
+  position:relative;
+}
+.section-head::after{
+  content:"";
+  position:absolute;left:0;bottom:-1px;height:1px;width:60px;
+  background:var(--gold);
 }
 .section-head.sub{margin-top:40px;margin-bottom:20px;padding-bottom:10px;}
 .section-head.sub h2{font-size:18px;}
@@ -129,6 +185,12 @@ section{padding:56px 0;}
   padding:18px;
   position:relative;
   overflow:hidden;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 22px rgba(0,0,0,.35);
+  border-color:var(--gold-dim);
 }
 .card::before{
   content:"";
@@ -217,6 +279,11 @@ section{padding:56px 0;}
   border-radius:6px;
   padding:22px 24px;
   position:relative;
+  transition:box-shadow .2s ease, transform .2s ease;
+}
+.enemy-panel:hover{
+  box-shadow:0 8px 22px rgba(0,0,0,.35);
+  transform:translateY(-2px);
 }
 .enemy-panel::before{
   content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--blood);
@@ -311,15 +378,24 @@ section{padding:56px 0;}
   border-radius:5px;
   cursor:pointer;
   font-size:15px;
-  box-shadow:var(--shadow);
-  transition:transform .1s ease;
+  box-shadow:var(--shadow), 0 0 0 rgba(201,162,74,.5);
+  transition:transform .1s ease, box-shadow .3s ease;
+  animation:btnGlow 3s ease-in-out infinite;
 }
 .run-btn:hover{transform:translateY(-1px);}
 .run-btn:active{transform:translateY(0);}
-.run-btn:disabled{opacity:.5;cursor:default;}
+.run-btn:disabled{opacity:.5;cursor:default;animation:none;}
+@keyframes btnGlow{
+  0%,100%{box-shadow:var(--shadow), 0 0 0 rgba(201,162,74,.35);}
+  50%{box-shadow:var(--shadow), 0 0 16px rgba(201,162,74,.55);}
+}
 
 .results{display:none;}
-.results.show{display:block;}
+.results.show{display:block;animation:fadeUp .5s ease both;}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
 
 /* ---------- Difficulty verdict panel ---------- */
 .difficulty-panel{
@@ -338,7 +414,7 @@ section{padding:56px 0;}
 .difficulty-badge.deadly{background:rgba(184,69,63,.18);color:var(--blood);border:1px solid var(--blood-dim);}
 .difficulty-note{color:var(--muted);font-size:14px;flex:1;min-width:220px;}
 .outcome-bar{display:flex;height:30px;border-radius:6px;overflow:hidden;margin-top:18px;border:1px solid var(--line);}
-.outcome-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#141119;font-weight:600;transition:width .3s;}
+.outcome-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#141119;font-weight:600;transition:width .9s cubic-bezier(.2,.8,.2,1);}
 .outcome-bar .seg.win{background:var(--verdi);}
 .outcome-bar .seg.loss{background:var(--blood);}
 .outcome-bar .seg.draw{background:var(--muted2);}
